@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<!-- saved from url=(0049)file:///C:/Users/PC/Downloads/exported%20(3).html -->
+<html lang="ru"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тренажёр: Таблица умножения</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 95%;
+            max-width: 400px; /* Ограничение ширины для больших экранов */
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 15px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        #example {
+            font-size: 2.8em; /* Очень крупный шрифт */
+            margin: 30px 0;
+            color: #333;
+        }
+        #input {
+            font-size: 2.2em;
+            width: 80%;
+            margin-bottom: 25px;
+            padding: 12px;
+            text-align: right;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Три колонки */
+            gap: 12px; /* Расстояние между кнопками */
+        }
+        .buttons button {
+            padding: 18px; /* Увеличенный размер кнопок */
+            font-size: 1.4em; /* Крупный шрифт на кнопках */
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .buttons button:active {
+            transform: scale(0.98);
+        }
+        #submit {
+            grid-column: span 3; /* Кнопка "Ответить" на всю ширину */
+            font-size: 1.4em;
+        }
+        #stats {
+            margin-top: 25px;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Тренажёр таблицы умножения</h1>
+    <div id="example" data-correct="48">8 × 6 = ?</div>
+    <input type="text" id="input" readonly="" placeholder="Ваш ответ">
+    <div class="buttons" id="buttons"><button style="background-color: rgb(255, 107, 107);">0</button><button style="background-color: rgb(78, 205, 196);">1</button><button style="background-color: rgb(69, 183, 209);">2</button><button style="background-color: rgb(247, 183, 51);">3</button><button style="background-color: rgb(54, 79, 107);">4</button><button style="background-color: rgb(108, 92, 231);">5</button><button style="background-color: rgb(255, 159, 243);">6</button><button style="background-color: rgb(85, 239, 196);">7</button><button style="background-color: rgb(255, 118, 117);">8</button><button style="background-color: rgb(0, 184, 148);">9</button><button style="background-color: rgb(169, 169, 169);">←</button><button id="submit" style="background-color: rgb(46, 204, 113);">Ответить</button></div>
+    <div id="stats">Правильных: 2 | Неверных: 1</div>
+</div>
+
+<script>
+    const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f7b733', '#364f6b', '#6c5ce7', '#ff9ff3', '#55efc4', '#ff7675', '#00b894'];
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+
+    function generateExample() {
+        const a = Math.floor(Math.random() * 8) + 2; // от 2 до 9
+        const b = Math.floor(Math.random() * 8) + 2; // от 2 до 9
+        const correct = a * b;
+
+        const exampleEl = document.getElementById('example');
+        exampleEl.textContent = `${a} × ${b} = ?`;
+
+        const inputEl = document.getElementById('input');
+        inputEl.value = ''; // Очистить поле ввода
+
+        // Сохраняем правильный ответ в data-атрибут для проверки
+        exampleEl.dataset.correct = correct;
+    }
+
+    function setupButtons() {
+        const buttonsEl = document.getElementById('buttons');
+        buttonsEl.innerHTML = '';
+
+        // Кнопки с цифрами от 0 до 9
+        for (let i = 0; i <= 9; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.style.backgroundColor = colors[i % colors.length];
+            btn.onclick = () => addDigit(i);
+            buttonsEl.appendChild(btn);
+        }
+
+         // Кнопка Backspace
+         const backspaceBtn = document.createElement('button');
+         backspaceBtn.textContent = '←';
+         backspaceBtn.style.backgroundColor = '#a9a9a9';
+         backspaceBtn.onclick = () => backspace();
+         buttonsEl.appendChild(backspaceBtn);
+
+         // Кнопка Ответить
+         const submitBtn = document.createElement('button');
+         submitBtn.textContent = 'Ответить';
+         submitBtn.id = 'submit';
+         submitBtn.style.backgroundColor = '#2ecc71';
+         submitBtn.onclick = checkAnswer;
+         buttonsEl.appendChild(submitBtn);
+    }
+
+    function addDigit(digit) {
+       const inputEl = document.getElementById('input');
+       inputEl.value += digit;
+    }
+
+    function backspace() {
+       const inputEl = document.getElementById('input');
+       inputEl.value = inputEl.value.slice(0, -1);
+    }
+
+    function checkAnswer() {
+       const inputEl = document.getElementById('input');
+       const exampleEl = document.getElementById('example');
+       const correct = parseInt(exampleEl.dataset.correct);
+       const answer = parseInt(inputEl.value);
+
+       if (isNaN(answer)) {
+           alert('Пожалуйста, введите ответ!');
+           return;
+       }
+
+       if (answer === correct) {
+           correctAnswers++;
+           updateStats();
+           generateExample();
+       } else {
+           wrongAnswers++;
+           updateStats();
+           alert('Неверно! Попробуйте ещё раз.');
+           inputEl.value = ''; // Очистить поле для новой попытки
+       }
+    }
+
+    function updateStats() {
+       document.getElementById('stats').textContent = `Правильных: ${correctAnswers} | Неверных: ${wrongAnswers}`;
+    }
+
+    // Инициализация при загрузке страницы
+    generateExample();
+    setupButtons();
+</script>
+</body></html>
